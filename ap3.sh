@@ -25,6 +25,19 @@ function getCredentials(){
     read -p "Digite a senha (deixe em branco para sem senha): " password
 }
 
+function selectFakePagesFolder(){
+    echo "Listando pastas no diretório atual:"
+    select folder in $(ls -d */ | cat -n); do
+        if [ -n "$folder" ]; then
+            break
+        else
+            echo "Opção inválida. Tente novamente."
+        fi
+    done
+
+    selected_folder=$(echo $folder | awk '{print $2}')
+}
+
 function startAttack(){
     use_channel=$(iwlist $interface channel | grep "Current Frequency" | cut -d '(' -f 2 | cut -d ')' -f 1)
     echo -e "interface=$interface\n" > hostapd.conf
@@ -48,6 +61,7 @@ function main(){
     dependencies
     getInterface
     getCredentials
+    selectFakePagesFolder
     startAttack
 }
 
