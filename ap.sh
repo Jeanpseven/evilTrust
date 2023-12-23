@@ -2,8 +2,6 @@
 # Script por Jeanpseven (wrench)
 # GitHub: jeanpseven
 
-#!/bin/bash
-
 iface=""
 
 echo -e "[*] Pressione Ctrl+C para encerrar.\n"
