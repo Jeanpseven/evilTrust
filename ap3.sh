@@ -40,17 +40,9 @@ function selectFakePagesFolder(){
 
 function startAttack(){
     use_channel=$(iwlist $interface channel | grep "Current Frequency" | cut -d '(' -f 2 | cut -d ')' -f 1)
-    echo -e "interface=$interface\n" > hostapd.conf
-    echo -e "driver=nl80211\n" >> hostapd.conf
-    echo -e "ssid=$ssid\n" >> hostapd.conf
-    if [ -n "$password" ]; then
-        echo -e "wpa_passphrase=$password\n" >> hostapd.conf
-    else
-        echo -e "open\n" >> hostapd.conf
-    fi
-    echo -e "channel=$use_channel\n" >> hostapd.conf
 
-    xterm -e "hostapd hostapd.conf" &
+    xterm -e "airbase-ng -e $ssid -c $use_channel $interface" &
+    
     echo "Ponto de acesso falso iniciado. Pressione Ctrl+C para encerrar."
     read -r -d '' _ </dev/tty
 }
