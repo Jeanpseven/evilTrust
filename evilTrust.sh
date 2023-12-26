@@ -91,3 +91,8 @@ function startAttack() {
         fi
     done
 }
+
+# Chamada das funções na ordem desejada
+dependencies
+getCredentials
+startAttack
