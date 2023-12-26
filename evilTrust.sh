@@ -94,10 +94,12 @@ function startAttack() {
 
 }
 
-case "$1" in --stop) stop ;; *)
+case "$1" in --stop) stop ;;
+ *) 
 createserver
-server
-startAttack
-
-
+;;
+server 
+;;
+startAttack 
+;;
 esac
