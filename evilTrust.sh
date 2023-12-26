@@ -92,13 +92,12 @@ function startAttack() {
         fi
     done
 
-    # Call other functions here
-    createpage
-    server
-    start
 }
 
-createpage
+case "$1" in --stop) stop ;; *)
+createserver
 server
-start
 startAttack
+
+
+esac
