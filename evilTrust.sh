@@ -95,7 +95,7 @@ function startAttack() {
 }
 
 case "$1" in --stop) stop ;;
- *) 
+ *) ;;
 createserver
 ;;
 server 
