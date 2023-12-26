@@ -22,7 +22,7 @@ function ctrl_c() {
 function dependencies() {
     sleep 1.5
     counter=0
-    echo -e "\nChecking required programs...\n" sleep 1
+    echo -e "\nChecking required programs...\n" && sleep 1
     dependencias=(php dnsmasq hostapd)
 
     for programa in "${dependencias[@]}"; do
