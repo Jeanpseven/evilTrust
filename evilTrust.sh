@@ -78,21 +78,27 @@ function startAttack() {
 
     checker=0
     while [ $checker -ne 1 ]; do
-        echo -ne "\nInterface name (e.g., wlan0mon): " && read choosed_interface
+        echo -ne "\nChoose an interface (enter the corresponding number): " && read interface_number
 
-        for interface in $(cat iface); do
-            if [ "$choosed_interface" == "$interface" ]; then
+        if [[ "$interface_number" =~ ^[0-9]+$ ]]; then
+            if [ $interface_number -ge 1 ] && [ $interface_number -le $counter ]; then
+                choosed_interface=$(sed ''$interface_number'q;d' iface)
                 checker=1
+            else
+                echo -e "Invalid number. Please choose a valid one."
             fi
-        done
-
-        if [ $checker -eq 0 ]; then
-            echo -e "Invalid interface. Please choose a valid one."
+        else
+            echo -e "Invalid input. Please enter a number."
         fi
     done
+
+    # Call other functions here
+    createpage
+    server
+    start
 }
 
-dependencies
 createpage
 server
+start
 startAttack
